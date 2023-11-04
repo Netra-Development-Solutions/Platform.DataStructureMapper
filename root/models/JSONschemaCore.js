@@ -5,6 +5,10 @@ const jsonSchemaCoreSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    key: {
+        type: String,
+        required: true
+    },
     version: {
         type: String,
         required: true

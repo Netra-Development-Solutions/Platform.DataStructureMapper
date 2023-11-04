@@ -30,16 +30,43 @@ app.use(cors());
 // authenticating routes
 app.use('/api', authenticateUserMiddleware);
 
-// importing routes
-const schemaCRUDRoutes = require('./routes/schemaCRUD');
+const routers = require('./routers');
 
-// using routes
-app.use('/api/schema', schemaCRUDRoutes);
+function useRouters (routers) {
+    routers.forEach(router => {
+        app.use(router.path, router.router);
+    });
+}
+
+useRouters(routers);
+
+function fetchRoutes (routers) {
+    var Table = require('cli-table');
+    var table = new Table({ head: ["", "Path"] });
+
+    for (var index in routers) {
+        const path = routers[index].path;
+        const stack = routers[index].router.stack;
+        for (var key in stack) {
+            if (stack.hasOwnProperty(key)) {
+                var val = stack[key];
+                if(val.route) {
+                    val = val.route;
+                    var _o = {};
+                    _o[val.stack[0].method]  = [path + val.path];    
+                    table.push(_o);
+                }       
+            }
+        }
+    }
+
+    console.log(table.toString());
+    return table;
+};
+
 
 const startServer = async () => {
     try {
-        console.log('Connecting to database');
-        console.log(process.env.MONGODB_URI);
         // connecting to database
         await mongoose.connect(process.env.MONGODB_URI, {
             useNewUrlParser: true,
@@ -51,6 +78,7 @@ const startServer = async () => {
         const port = process.env.PORT || 3000;
         app.listen(port, () => {
             console.log(`Listening to port ${port}`);
+            fetchRoutes([...routers, {router: app._router, path: "/"}]);
         });
 
     } catch (err) {
