@@ -1,19 +1,17 @@
-const express = require('express');
 const { updateSchema } = require('../controllers/SchemaCRUD/updateSchema');
 
-// Creating router
-const router = express.Router();
+const routesConfig = [
+    {
+        method: 'post',
+        path: '/manage',
+        controller: updateSchema,
+        middleware: [],
+        inputSchema: {
+            key: 'CreateSchemaAPI',
+            version: '1'
+        },
+        description: 'Update schema API'
+    }
+]
 
-// METHOD : GET
-// PATH : /api/schema/get-all
-// route for getting all schemas
-router.get('/get-all', (req, res) => {
-    res.send('get all schemas');
-});
-
-// METHOD : POST
-// PATH : /api/schema/schema
-// route for creating a schema
-router.post('/schema', updateSchema);
-
-module.exports = router;
+module.exports = routesConfig;

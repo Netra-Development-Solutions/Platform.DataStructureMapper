@@ -1,8 +1,4 @@
-const express = require('express');
 const { validateSchema } = require('../controllers/Validate/validateSchema');
-
-// Creating router
-const router = express.Router();
 
 const routesConfig = [
     {
@@ -13,17 +9,9 @@ const routesConfig = [
         inputSchema: {
             key: 'TestSchema',
             version: '1'
-        }
+        },
+        description: 'Validate schema against data API'
     }
 ]
-
-// METHOD : GET
-// PATH : /api/validation/get-all
-// route for getting all validations
-
-// METHOD : POST
-// PATH : /api/validation/ValidateSchema
-// route for creating a validation
-router.post('/ValidateSchema', validateSchema);
 
 module.exports = routesConfig;
