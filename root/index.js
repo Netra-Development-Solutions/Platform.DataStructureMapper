@@ -1,3 +1,4 @@
+const startTimestamp = new Date().getTime();
 // importing modules
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -27,6 +28,7 @@ if (process.env.NODE_ENV === 'development') {
 var generatedRouters = []
 var generatedSchema = {}
 var generatedRoutes = {}
+
 
 // using body-parser middleware
 app.use(cors());
@@ -72,12 +74,6 @@ async function createRouters (router) {
 }
 
 async function useRouters (routers) {
-    // routers.forEach(async router => {
-    //     const Router = await createRouters(router);
-    //     generatedRouters.push({path: router.path, router: Router});
-    //     app.use(router.path, Router);
-    // });
-
     for (var index in routers) {
         const Router = await createRouters(routers[index]);
         generatedRouters.push({path: routers[index].path, router: Router});
@@ -127,6 +123,9 @@ const startServer = async () => {
         app.listen(port, () => {
             console.log(`Listening to port ${port}`);
             fetchRoutes(generatedRouters);
+            const endTimestamp = new Date().getTime();
+            const timeTaken = endTimestamp - startTimestamp;
+            console.log(`Time taken to start server: ${timeTaken} ms`);
         });
 
     } catch (err) {
