@@ -7,6 +7,7 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const authenticateUserMiddleware = require('./middlewares/authenticate');
+const { validateSchemaMiddleware } = require('./middlewares/validateBodyData');
 
 // configuring dotenv
 require('dotenv').config();
@@ -23,26 +24,38 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // using body-parser middleware
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
 app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // authenticating routes
 app.use('/api', authenticateUserMiddleware);
+app.use('/api', validateSchemaMiddleware)
 
 const routers = require('./routers');
+var generatedRoutes = []
+
+function createRouters (router) {
+    const Router = express.Router();
+
+    router.router.forEach(route => {
+        Router[route.method](route.path, [...route.middleware], route.controller);
+    })
+
+    return Router;
+}
 
 function useRouters (routers) {
     routers.forEach(router => {
-        app.use(router.path, router.router);
+        const Router = createRouters(router);
+        generatedRoutes.push({path: router.path, router: Router});
+        app.use(router.path, Router);
     });
 }
 
-useRouters(routers);
-
 function fetchRoutes (routers) {
     var Table = require('cli-table');
-    var table = new Table({ head: ["", "Path"] });
+    var table = new Table({ head: ["METHOD", "PATH"] });
 
     for (var index in routers) {
         const path = routers[index].path;
@@ -64,6 +77,7 @@ function fetchRoutes (routers) {
     return table;
 };
 
+useRouters(routers);
 
 const startServer = async () => {
     try {
@@ -78,7 +92,7 @@ const startServer = async () => {
         const port = process.env.PORT || 3000;
         app.listen(port, () => {
             console.log(`Listening to port ${port}`);
-            fetchRoutes([...routers, {router: app._router, path: "/"}]);
+            fetchRoutes(generatedRoutes);
         });
 
     } catch (err) {
@@ -86,4 +100,9 @@ const startServer = async () => {
     }
 };
 
-startServer();
+try {
+    startServer();
+} catch (err) {
+    console.log('Error starting server');
+    console.log(err);
+}

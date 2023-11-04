@@ -1,9 +1,21 @@
 const express = require('express');
 const { validateSchema } = require('../controllers/Validate/validateSchema');
-const JsonValidationEngine = require('@netra-development-solutions/json_validation_engine-lib');
 
 // Creating router
 const router = express.Router();
+
+const routesConfig = [
+    {
+        method: 'post',
+        path: '/ValidateSchema',
+        controller: validateSchema,
+        middleware: [],
+        inputSchema: {
+            key: 'TestSchema',
+            version: '1'
+        }
+    }
+]
 
 // METHOD : GET
 // PATH : /api/validation/get-all
@@ -14,4 +26,4 @@ const router = express.Router();
 // route for creating a validation
 router.post('/ValidateSchema', validateSchema);
 
-module.exports = router;
+module.exports = routesConfig;
