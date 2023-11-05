@@ -61,7 +61,7 @@ pipeline {
             steps {
                 dir("${folder_path}") {
                     // Build Docker image
-                    bat "docker build -t platform_datastructuremapper_root:${version} ."
+                    bat "docker build -t platform_datastructuremapper_root:${env.BUILD_NUMBER} ."
                 }
             }
         }
@@ -73,11 +73,30 @@ pipeline {
                         // Log in to Docker Hub using Jenkins credentials
                         withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: "${docker_hub_cred}", usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD']]) {
                             // Log in to Docker Hub
-                            bat 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD'
+                            try {
+                                bat "docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}"
+                            } catch (err) {
+                                echo "Error logging in to Docker Hub: ${err}"
+                                error "Error logging in to Docker Hub: ${err}"
+                            }
                         }
+                        // remove latest local image if exists
+                        try {
+                            bat "docker rmi ${docker_username}/${docker_image_name}:latest"
+                        } catch (err) {
+                            echo "No local image to remove: ${docker_username}/${docker_image_name}:latest"
+                        }
+
                         // Push Docker image to registry
-                        bat "docker tag ${docker_image_name}:${version} namankhater/${docker_image_name}:${env.BUILD_NUMBER}"
+                        bat "docker tag ${docker_image_name}:${env.BUILD_NUMBER} namankhater/${docker_image_name}:${env.BUILD_NUMBER}"
+                        bat "docker tag ${docker_image_name}:${env.BUILD_NUMBER} namankhater/${docker_image_name}:latest"
+
                         bat "docker push ${docker_username}/${docker_image_name}:${env.BUILD_NUMBER}"
+                        bat "docker push ${docker_username}/${docker_image_name}:latest"
+
+                        // remove local image
+                        bat "docker rmi ${docker_username}/${docker_image_name}:${env.BUILD_NUMBER}"
+                        bat "docker rmi ${docker_image_name}:${env.BUILD_NUMBER}"
                     }
                 }
             }
