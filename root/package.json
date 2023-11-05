@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node index.js",
     "docker:build": "docker build -t platform_datastructuremapper_root:latest .",
+    "docker:push": "docker push namankhater/platform_datastructuremapper_root:latest",
     "docker:run": "docker run -d -p 6565:6565 --env-file .env --name platform_datastructuremapper_root --memory=\"256m\" --cpus=0.5 platform_datastructuremapper_root:latest",
+    "docker:run:prod": "docker run -d -p 6565:6565 --env-file .env --name platform_datastructuremapper_root --memory=\"256m\" --cpus=0.5 namankhater/platform_datastructuremapper_root:latest",
+    "docker:tag": "docker tag platform_datastructuremapper_root:latest namankhater/platform_datastructuremapper_root:latest",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
