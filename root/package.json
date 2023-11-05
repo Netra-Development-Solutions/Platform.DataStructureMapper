@@ -1,9 +1,12 @@
 {
-  "name": "root",
+  "name": "platform_datastructuremapper_root",
   "version": "1.0.0",
   "description": "This is the server side of the datastructure validator and mapper.",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "docker:build": "docker build -t platform_datastructuremapper_root:latest .",
+    "docker:run": "docker run -d -p 6565:6565 --env-file .env --name platform_datastructuremapper_root --memory=\"256m\" --cpus=0.5 platform_datastructuremapper_root:latest",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

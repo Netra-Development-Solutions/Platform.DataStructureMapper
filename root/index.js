@@ -17,11 +17,16 @@ require('dotenv').config();
 // creating express object
 const app = express();
 
+console.log("ENV", process.env)
+
 // configuring morgan
 if (process.env.NODE_ENV === 'development') {
     var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
     app.use(morgan('dev', { stream: accessLogStream }));
+    app.use(morgan('dev'));
 } else {
+    var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
+    app.use(morgan('combined', { stream: accessLogStream }));
     app.use(morgan('combined'));
 }
 
