@@ -1,0 +1,80 @@
+pipeline {
+    agent any
+    
+    environment {
+        docker_image_name = "platform_datastructuremapper_root"
+        docker_image_tag = "latest"
+        docker_username = "namankhater"
+        version = "latest"
+        folder_path = "root"
+        repo_url = "https://github.com/Netra-Development-Solutions/Platform.DataStructureMapper"
+    }
+    
+    stages {
+        stage("Manual approval") {
+            steps {
+                script {
+                    def packageJsonContents = readFile("${folder_path}/package.json")
+                    def packageJson = readJSON text: packageJsonContents    
+                    
+                    def packageName = packageJson.name
+                    def packageVersion = packageJson.version
+                    
+                    // Deploy to "name/version" path in S3
+                    def deployPath = "${packageName}/${packageVersion}"
+                    
+                    // Display extracted information
+                    echo "Package Name: ${packageName}"
+                    echo "Package Version: ${packageVersion}"
+                    
+                    // Manual approval step
+                    input(message: "Proceed with deploying to ${deployPath}?", ok: "Deploy")
+                }
+            }
+        }
+        
+        stage("Cloning GitHub Repo") {
+            steps {
+                echo "Cloning code from GitHub"
+                git branch: 'RELEASE', url: "${repo_url}"
+            }
+        }
+        
+        stage("Install npm packages") {
+            steps {
+                dir("${folder_path}") {
+                    echo "Installing npm dependencies"
+                    bat "npm install"
+                }
+            }
+        }
+        
+        stage("Run Tests") {
+            steps {
+                echo "Running tests"
+                // bat "npm test"
+            }
+        }
+        
+        stage("Building docker image") {
+            steps {
+                dir("${folder_path}") {
+                    // Build Docker image
+                    bat "docker build -t platform_datastructuremapper_root:${version} ."
+                }
+            }
+        }
+        
+         stage('Push to Registry') {
+            steps {
+                dir("${folder_path}") {
+                    script {
+                    // Push Docker image to registry
+                    bat "docker tag ${docker_image_name}:${version} namankhater/${docker_image_name}:${env.BUILD_NUMBER}"
+                    bat "docker push ${docker_username}/${docker_image_name}:${env.BUILD_NUMBER}"
+                    }
+                }
+            }
+        }
+    }
+}
