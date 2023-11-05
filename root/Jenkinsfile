@@ -73,7 +73,7 @@ pipeline {
                         // Log in to Docker Hub using Jenkins credentials
                         withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: "${docker_hub_cred}", usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD']]) {
                             // Log in to Docker Hub
-                            bat 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD'
+                            bat "docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}"
                         }
                         // Push Docker image to registry
                         bat "docker tag ${docker_image_name}:${version} namankhater/${docker_image_name}:${env.BUILD_NUMBER}"
